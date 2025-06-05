@@ -1,0 +1,11 @@
+{
+  "fiturUtama": [
+    { "title": "Analisis Data", "icon": "assets/icons/analis.jpg" },
+    { "title": "Cetak Laba", "icon": "assets/icons/laba.jpg" },
+    { "title": "Pembelajaran", "icon": "assets/icons/pembelajran.png" }
+  ],
+  "fiturTambahan": [
+    { "title": "Catatan Hutang", "icon": "assets/icons/catatan.png" },
+    { "title": "Riwayat Aktivitas", "icon": "assets/icons/riwayat.png" }
+  ]
+}
