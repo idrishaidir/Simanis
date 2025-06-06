@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../models/riwayat_model.dart';
 import '../../providers/profil_provider.dart';
 import '../../providers/riwayat_provider.dart';
 
@@ -92,7 +93,6 @@ class _RiwayatAktivitasPageState extends State<RiwayatAktivitasPage> {
                           Navigator.of(context).pop();
                         },
                       ),
-
                       ElevatedButton(
                         child: Text('Terapkan'),
                         onPressed: () {
@@ -155,6 +155,29 @@ class _RiwayatAktivitasPageState extends State<RiwayatAktivitasPage> {
       decimalDigits: 0,
     );
 
+    final groupedAktivitas = <String, List<AktivitasItem>>{};
+    for (var item in riwayatProvider.aktivitas) {
+      final now = DateTime.now();
+      String monthYearKey;
+      if (item.tanggal.year == now.year && item.tanggal.month == now.month) {
+        monthYearKey = 'Bulan Ini';
+      } else {
+        monthYearKey = DateFormat('MMMM yyyy', 'id_ID').format(item.tanggal);
+      }
+
+      if (groupedAktivitas[monthYearKey] == null) {
+        groupedAktivitas[monthYearKey] = [];
+      }
+      groupedAktivitas[monthYearKey]!.add(item);
+    }
+
+    // --- LOGIKA BARU UNTUK MEMBUAT DAFTAR TAMPILAN ---
+    final displayList = [];
+    groupedAktivitas.forEach((key, value) {
+      displayList.add(key); // Tambah Header (String)
+      displayList.addAll(value); // Tambah item transaksi (AktivitasItem)
+    });
+
     return Scaffold(
       backgroundColor: Color(0xFFD9E4E1),
       appBar: AppBar(
@@ -183,10 +206,14 @@ class _RiwayatAktivitasPageState extends State<RiwayatAktivitasPage> {
                   child: TextField(
                     controller: _searchController,
                     onChanged: (value) {
-                      riwayatProvider.filterAktivitas(query: value);
+                      riwayatProvider.filterAktivitas(
+                        query: value,
+                        tanggalMulai: _pickedTanggalMulai,
+                        tanggalAkhir: _pickedTanggalAkhir,
+                      );
                     },
                     decoration: InputDecoration(
-                      hintText: 'Cari ID, jumlah, atau bulan...',
+                      hintText: 'Cari Transaksi',
                       prefixIcon: Icon(Icons.search),
                       filled: true,
                       fillColor: Colors.white,
@@ -208,73 +235,104 @@ class _RiwayatAktivitasPageState extends State<RiwayatAktivitasPage> {
             child:
                 riwayatProvider.isLoading
                     ? Center(child: CircularProgressIndicator())
-                    : Consumer<RiwayatProvider>(
-                      builder: (context, provider, child) {
-                        if (provider.aktivitas.isEmpty) {
-                          return Center(
+                    : displayList.isEmpty
+                    ? Center(
+                      child: Text('Tidak ada riwayat transaksi yang cocok.'),
+                    )
+                    // --- LISTVIEW BARU YANG MENGGUNAKAN GROUPING ---
+                    : ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: displayList.length,
+                      itemBuilder: (context, index) {
+                        final item = displayList[index];
+
+                        if (item is String) {
+                          // Tampilkan Header Bulan
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 16.0,
+                              bottom: 8.0,
+                            ),
                             child: Text(
-                              'Tidak ada riwayat transaksi yang cocok.',
+                              item,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
                             ),
                           );
-                        }
-                        return ListView.builder(
-                          itemCount: provider.aktivitas.length,
-                          itemBuilder: (context, index) {
-                            final item = provider.aktivitas[index];
-                            bool isUangMasuk = item.tipe == 'Uang Masuk';
-                            return Card(
-                              margin: EdgeInsets.symmetric(
+                        } else if (item is AktivitasItem) {
+                          // Tampilkan Card Transaksi dengan layout baru
+                          final aktivitas = item;
+                          bool isUangMasuk = aktivitas.tipe == 'Uang Masuk';
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 6),
+                            color: Color(0xFF355A63),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
                                 horizontal: 16,
-                                vertical: 6,
                               ),
-                              color: Color(0xFF355A63),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.id,
+                                          aktivitas.tipe,
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold,
                                             fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                         SizedBox(height: 4),
                                         Text(
-                                          'Tanggal ${DateFormat('dd-MM-yyyy').format(item.tanggal)}',
+                                          'Tanggal ${DateFormat('dd-MM-yyyy').format(aktivitas.tanggal)}',
                                           style: TextStyle(
                                             color: Colors.white70,
+                                            fontSize: 12,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      '${isUangMasuk ? '+' : '-'} ${formatter.format(item.jumlah)}',
-                                      style: TextStyle(
-                                        color:
-                                            isUangMasuk
-                                                ? Colors.greenAccent
-                                                : Colors.redAccent,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '${isUangMasuk ? '+' : '-'} ${formatter.format(aktivitas.jumlah)}',
+                                        style: TextStyle(
+                                          color:
+                                              isUangMasuk
+                                                  ? Colors.greenAccent
+                                                  : Colors.redAccent,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        aktivitas.id,
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        );
+                            ),
+                          );
+                        }
+                        return SizedBox.shrink();
                       },
                     ),
           ),

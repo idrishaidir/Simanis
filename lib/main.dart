@@ -15,8 +15,11 @@ import 'screens/transaksi_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/section_profil/qrcode_screen.dart';
 import 'package:SIMANIS_V1/providers/news.provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   runApp(
     MultiProvider(
       providers: [

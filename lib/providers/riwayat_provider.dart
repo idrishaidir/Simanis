@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../config/database.dart';
+import '../models/beban_model.dart';
+import '../models/riwayat_model.dart'; // Pastikan import ini ada
+import '../models/transaksi_model.dart';
+
 class RiwayatProvider with ChangeNotifier {
   List<AktivitasItem> _semuaAktivitas = [];
   List<AktivitasItem> _aktivitasYangTampil = [];
@@ -55,39 +60,44 @@ class RiwayatProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(Duration(seconds: 1));
-    _semuaAktivitas = [
-      AktivitasItem(
-        id: '#TRX001',
-        tipe: 'Uang Masuk',
-        jumlah: 75000,
-        tanggal: DateTime(2025, 1, 15),
-      ),
-      AktivitasItem(
-        id: '#TRX002',
-        tipe: 'Uang Masuk',
-        jumlah: 120000,
-        tanggal: DateTime(2025, 1, 20),
-      ),
-      AktivitasItem(
-        id: '#TRX003',
-        tipe: 'Uang Masuk',
-        jumlah: 50000,
-        tanggal: DateTime.now(),
-      ),
-      AktivitasItem(
-        id: '#TRX004',
-        tipe: 'Uang Keluar',
-        jumlah: 35000,
-        tanggal: DateTime.now(),
-      ),
-      AktivitasItem(
-        id: '#TRX005',
-        tipe: 'Uang Masuk',
-        jumlah: 75000,
-        tanggal: DateTime(2025, 3, 1),
-      ),
-    ];
+    final db = await DatabaseHelper.database;
+
+    final List<Map<String, dynamic>> transaksiData = await db.query(
+      'transaksi',
+      where: 'user_id = ?',
+      whereArgs: [userId.toString()],
+    );
+
+    final List<AktivitasItem> aktivitasMasuk =
+        transaksiData.map((item) {
+          final trx = Transaksi.fromMap(item);
+          return AktivitasItem(
+            id: '#TRX${trx.id_trs}',
+            tipe: 'Uang Masuk',
+            jumlah: trx.totalJual,
+            tanggal: trx.tanggal,
+          );
+        }).toList();
+
+    final List<Map<String, dynamic>> bebanData = await db.query(
+      'beban',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+
+    final List<AktivitasItem> aktivitasKeluar =
+        bebanData.map((item) {
+          final beban = Beban.fromMap(item);
+          return AktivitasItem(
+            id: '#BBN${beban.id_beban}',
+            tipe: 'Uang Keluar',
+            jumlah: beban.jumlah_beban,
+            tanggal: beban.tanggal_beban,
+          );
+        }).toList();
+
+    _semuaAktivitas = [...aktivitasMasuk, ...aktivitasKeluar];
+    _semuaAktivitas.sort((a, b) => b.tanggal.compareTo(a.tanggal));
 
     resetFilter();
     _isLoading = false;
@@ -144,18 +154,4 @@ class RiwayatProvider with ChangeNotifier {
     _tanggalAkhir = null;
     _aktivitasYangTampil = _semuaAktivitas;
   }
-}
-
-class AktivitasItem {
-  final String id;
-  final String tipe;
-  final double jumlah;
-  final DateTime tanggal;
-
-  AktivitasItem({
-    required this.id,
-    required this.tipe,
-    required this.jumlah,
-    required this.tanggal,
-  });
 }
