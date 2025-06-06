@@ -54,14 +54,12 @@ class BarangProvider with ChangeNotifier {
   Future<void> kurangiStokBarang(int id_brg, int jumlah) async {
     final db = await DatabaseHelper.database;
 
-    // Ambil data barang yang akan dikurangi
     final barangIndex = _barangList.indexWhere((b) => b.id_brg == id_brg);
     if (barangIndex == -1) return;
 
     final barang = _barangList[barangIndex];
     final stokBaru = barang.stok - jumlah;
 
-    // Update stok di database
     await db.update(
       'barang',
       {'stok': stokBaru},
@@ -69,7 +67,6 @@ class BarangProvider with ChangeNotifier {
       whereArgs: [id_brg],
     );
 
-    // Update list di memory
     _barangList[barangIndex] = Barang(
       id_brg: barang.id_brg,
       user_id: barang.user_id,
@@ -77,10 +74,9 @@ class BarangProvider with ChangeNotifier {
       kode_brg: barang.kode_brg,
       stok: stokBaru,
       harga_jual: barang.harga_jual,
-      harga_modal: barang.harga_modal
+      harga_modal: barang.harga_modal,
     );
 
     notifyListeners();
   }
-
 }

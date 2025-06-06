@@ -70,11 +70,8 @@ class _BeritaSectionState extends State<BeritaSection> {
                               return InkWell(
                                 onTap: () {
                                   if (url.isNotEmpty) {
-                                    launchURL(
-                                      context,
-                                      url,
-                                    ); // pastikan sudah import url_launcher.dart helper
-                                  }else {
+                                    launchURL(context, url);
+                                  } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('URL tidak tersedia'),

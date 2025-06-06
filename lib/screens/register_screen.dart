@@ -1,9 +1,6 @@
-// import 'package:SIMANIS_V1/providers/register_provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/register_provider.dart';
 import 'package:provider/provider.dart';
-// import '../helpers/api_laravel.dart';
-// import '../config/database.dart';
 
 class RegisterScreen extends StatefulWidget {
   final VoidCallback? onSignInTap;
@@ -23,7 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final registerProvider = Provider.of<RegisterProvider>(context, listen: false);
+    final registerProvider = Provider.of<RegisterProvider>(
+      context,
+      listen: false,
+    );
     final success = await registerProvider.register(
       _emailController.text.trim(),
       _passwordController.text,
@@ -35,11 +35,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registrasi berhasil, silakan login')),
       );
-      Navigator.pop(context); // Kembali ke login
+      Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email sudah terdaftar')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Email sudah terdaftar')));
     }
   }
 
@@ -54,7 +54,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Sign In link di pojok kanan atas
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -63,14 +62,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         Text(
                           "Sudah Punya\nAkun?",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 15),
                           textAlign: TextAlign.right,
                         ),
                         GestureDetector(
-                          onTap: widget.onSignInTap ?? () => Navigator.pop(context),
+                          onTap:
+                              widget.onSignInTap ??
+                              () => Navigator.pop(context),
                           child: Text(
                             "Login",
                             style: TextStyle(
@@ -113,11 +111,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) =>
-                            value == null || !value.contains('@') ? 'Email tidak valid' : null,
+                        validator:
+                            (value) =>
+                                value == null || !value.contains('@')
+                                    ? 'Email tidak valid'
+                                    : null,
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -134,11 +138,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         obscureText: true,
-                        validator: (value) =>
-                            value == null || value.length < 6 ? 'Minimal 6 karakter' : null,
+                        validator:
+                            (value) =>
+                                value == null || value.length < 6
+                                    ? 'Minimal 6 karakter'
+                                    : null,
                       ),
                       const SizedBox(height: 32),
                       SizedBox(
@@ -152,12 +162,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: _isLoading
-                              ? CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                                  "Register",
-                                  style: TextStyle(fontSize: 20, color: Colors.white),
-                                ),
+                          child:
+                              _isLoading
+                                  ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                  : Text(
+                                    "Register",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                         ),
                       ),
                     ],

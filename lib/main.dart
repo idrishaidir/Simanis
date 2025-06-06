@@ -1,4 +1,5 @@
-// import 'package:SIMANIS_V1/screens/transaksi_page.dart';
+import 'package:SIMANIS_V1/providers/beban_provider.dart';
+import 'package:SIMANIS_V1/providers/riwayat_provider.dart';
 import 'package:SIMANIS_V1/providers/transaksi_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,20 +14,19 @@ import 'screens/barang_list_screen.dart';
 import 'screens/transaksi_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/section_profil/qrcode_screen.dart';
-// import 'models/profil_model.dart';
 import 'package:SIMANIS_V1/providers/news.provider.dart';
-// import 'screens/transaksi_page.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        // ChangeNotifierProvider(create: (_) => BarangProvider(/* provide required argument here */)),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => RegisterProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => TransaksiProvider()),
-        ChangeNotifierProvider(create: (_) => NewsProvider(),),
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => BebanProvider()),
+        ChangeNotifierProvider(create: (_) => RiwayatProvider()),
       ],
       child: SimanisApp(),
     ),
@@ -41,7 +41,7 @@ class SimanisApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       routes: routes,
       home: LoginScreen(),
-      // debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -61,25 +61,27 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    //load profile data
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ProfileProvider>(context, listen: false)
-          .getProfile(widget.id_user);
+      Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      ).getProfile(widget.id_user);
     });
 
     _pages = [
       BerandaPage(),
-      // TransaksiPage(),
-      // TransaksiScreen(),
       ChangeNotifierProvider(
         create: (_) => BarangProvider(widget.id_user),
         child: TransaksiScreen(),
       ),
       Builder(
         builder: (context) {
-          final profile = Provider.of<ProfileProvider>(context, listen: false).profile;
-          // Jika profile belum ada, tampilkan loader atau kosong
-          if (profile == null) return Center(child: CircularProgressIndicator());
+          final profile =
+              Provider.of<ProfileProvider>(context, listen: false).profile;
+
+          if (profile == null)
+            return Center(child: CircularProgressIndicator());
           return QRCodeScreen(profile: profile);
         },
       ),
@@ -92,7 +94,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onItemTapped(int index) {
-    // if (index == 2) return;
     setState(() {
       _selectedIndex = index;
     });

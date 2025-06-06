@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'package:uuid/uuid.dart';
-// import 'dart:convert';
 
 import '../models/barang_model.dart';
 import '../models/transaksi_model.dart';
@@ -79,7 +77,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   void _simpanTransaksi() async {
-    
     double bayar = double.tryParse(_bayarController.text) ?? 0;
 
     if (bayar < _totalJual) {
@@ -105,8 +102,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       listen: false,
     );
     final barangProvider = Provider.of<BarangProvider>(context, listen: false);
-    
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+
+    final profileProvider = Provider.of<ProfileProvider>(
+      context,
+      listen: false,
+    );
     final user_id = profileProvider.profile?.id_user ?? 0;
     final trx = Transaksi(
       id_trs: DateTime.now().millisecondsSinceEpoch,
@@ -121,14 +121,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
     await transaksiProvider.tambahTransaksi(trx);
 
-    // Kurangi stok barang
     for (var item in _keranjang) {
-      await barangProvider.kurangiStokBarang(item['id'], item['jumlah']);
+      await barangProvider.kurangiStokBarang(item['id_brg'], item['jumlah']);
     }
 
     setState(() {
       _keranjang.clear();
       _totalJual = 0;
+      _totalModal = 0;
       _kembalian = 0;
       _bayarController.clear();
     });
@@ -198,12 +198,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
-                        // floatingLabelBehavior: FloatingLabelBehavior.never,
                       ),
                       style: TextStyle(color: Colors.white),
                       cursorColor: Colors.white,
                       onFieldSubmitted: (_) {
-                        final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+                        final profileProvider = Provider.of<ProfileProvider>(
+                          context,
+                          listen: false,
+                        );
                         final user_id = profileProvider.profile?.id_user ?? 0;
                         final barang = barangList.firstWhere(
                           (b) =>

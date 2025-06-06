@@ -3,7 +3,7 @@ import 'dart:convert';
 class Transaksi {
   final int id_trs;
   final int user_id;
-  final List<Map<String, dynamic>> barangList; // id_trs_barang, nama, jumlah, harga, subtotal
+  final List<Map<String, dynamic>> barangList;
   final double totalJual;
   final double totalModal;
   final double dibayar;
@@ -25,7 +25,7 @@ class Transaksi {
     return {
       'id_trs': id_trs,
       'user_id': user_id,
-      'barangList': jsonEncode(barangList), // convert to string
+      'barangList': barangList,
       'totalJual': totalJual,
       'totalModal': totalModal,
       'dibayar': dibayar,
@@ -37,8 +37,13 @@ class Transaksi {
   factory Transaksi.fromMap(Map<String, dynamic> map) {
     return Transaksi(
       id_trs: map['id_trs'],
-      user_id: map['user_id'],
-      barangList: List<Map<String, dynamic>>.from(jsonDecode(map['barangList'])), // decode dari JSON string
+
+      user_id: int.parse(map['user_id'].toString()),
+
+      barangList:
+          map['barangList'] is String
+              ? List<Map<String, dynamic>>.from(jsonDecode(map['barangList']))
+              : List<Map<String, dynamic>>.from(map['barangList']),
       totalJual: map['totalJual'],
       totalModal: map['totalModal'],
       dibayar: map['dibayar'],

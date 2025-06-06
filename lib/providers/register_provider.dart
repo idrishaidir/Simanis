@@ -19,7 +19,7 @@ class RegisterProvider with ChangeNotifier {
     if (existing.isNotEmpty) {
       _isLoading = false;
       notifyListeners();
-      return false; // Email sudah terdaftar
+      return false;
     }
 
     await db.insert('profil', {
@@ -39,5 +39,4 @@ class RegisterProvider with ChangeNotifier {
     notifyListeners();
     return true;
   }
-    
 }

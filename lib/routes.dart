@@ -6,7 +6,6 @@ import 'screens/transaksi_screen.dart';
 import 'screens/login_screen.dart';
 
 final Map<String, WidgetBuilder> routes = {
-  // '/main': (context) => MainPage(),
   '/beranda': (context) => BerandaPage(),
   '/barang': (context) => BarangListScreen(),
   '/profil': (context) => ProfilScreen(id_user: 0),

@@ -7,7 +7,6 @@ class ProfileProvider with ChangeNotifier {
 
   StoreProfile? get profile => _profile;
 
-  // Ambil profile user yang sedang login
   Future<void> getProfile(int id_user) async {
     final db = await DatabaseHelper.database;
     final data = await db.query(
@@ -21,7 +20,6 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  // Update seluruh data profile user login
   Future<void> updateProfile(StoreProfile updatedProfile) async {
     final db = await DatabaseHelper.database;
     final count = await db.update(
@@ -35,7 +33,6 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  // Update satu field profile user login
   Future<void> updateField(int id_user, String field, String value) async {
     final db = await DatabaseHelper.database;
     final count = await db.update(
@@ -48,22 +45,6 @@ class ProfileProvider with ChangeNotifier {
       await getProfile(id_user);
     }
   }
-
-  // Future<void> getProfileEmailById(int id_user) async {
-  //   final db = await DatabaseHelper.database;
-  //   final data = await db.query(
-  //     'profil',
-  //     columns: ['email'],
-  //     where: 'id_user = ?',
-  //     whereArgs: [id_user],
-  //   );
-  //   if (data.isNotEmpty) {
-  //     _profile = StoreProfile.fromMap(data.first);
-  //     notifyListeners();
-  //   } else {
-  //     _profile = null;
-  //   }
-  // }
 
   Future<StoreProfile?> getProfileByEmail(String email) async {
     final db = await DatabaseHelper.database;
@@ -79,7 +60,6 @@ class ProfileProvider with ChangeNotifier {
     } else {
       _profile = null;
       return null;
-      // throw Exception('Profile tidak ditemukan untuk email: $email');
     }
   }
 }

@@ -1,9 +1,10 @@
+import 'package:SIMANIS_V1/providers/beban_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/barang_model.dart';
+import '../models/beban_model.dart';
 import '../providers/barang_provider.dart';
 import '../providers/profil_provider.dart';
-import 'package:uuid/uuid.dart';
 
 class BarangFormScreen extends StatefulWidget {
   final Barang? barang;
@@ -21,6 +22,80 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
   late double _harga_jual;
   late double _harga_modal;
 
+  void _catatBebanPembelianStok(
+    int perubahanStok,
+    double hargaModal,
+    String namaBarang,
+    int userId,
+  ) {
+    if (perubahanStok <= 0) return;
+
+    final bebanProvider = Provider.of<BebanProvider>(context, listen: false);
+    final totalBiayaStok = perubahanStok * hargaModal;
+
+    final bebanBaru = Beban(
+      user_id: userId,
+      nama_beban: "Pembelian Stok: $namaBarang",
+      jumlah_beban: totalBiayaStok,
+      tanggal_beban: DateTime.now(),
+    );
+
+    bebanProvider.addBeban(bebanBaru);
+    print("Mencatat beban pembelian stok sebesar: $totalBiayaStok");
+  }
+
+  void _simpanForm() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final barangProvider = Provider.of<BarangProvider>(
+        context,
+        listen: false,
+      );
+      final profileProvider = Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      );
+      final userId = profileProvider.profile?.id_user ?? 0;
+      final isEdit = widget.barang != null;
+
+      if (isEdit) {
+        final stokLama = widget.barang!.stok;
+        final perubahanStok = _stok - stokLama;
+
+        _catatBebanPembelianStok(perubahanStok, _harga_modal, _nama, userId);
+
+        await barangProvider.editBarang(
+          widget.barang!.id_brg,
+          Barang(
+            id_brg: widget.barang!.id_brg,
+            user_id: widget.barang!.user_id,
+            nama: _nama,
+            kode_brg: _kode_brg,
+            stok: _stok,
+            harga_jual: _harga_jual,
+            harga_modal: _harga_modal,
+          ),
+        );
+      } else {
+        final barangBaru = Barang(
+          id_brg: DateTime.now().millisecondsSinceEpoch,
+          user_id: userId,
+          nama: _nama,
+          kode_brg: _kode_brg,
+          stok: _stok,
+          harga_jual: _harga_jual,
+          harga_modal: _harga_modal,
+        );
+
+        await barangProvider.tambahBarang(barangBaru);
+
+        _catatBebanPembelianStok(_stok, _harga_modal, _nama, userId);
+      }
+
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.barang != null;
@@ -32,14 +107,12 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
         title: Text(
           isEdit ? 'Edit Barang' : 'Tambah Barang',
           style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w900,
-                      ),
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
           ),
+        ),
       ),
-      
-      // body: Padding(
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Form(
@@ -48,201 +121,187 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
             children: [
               Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 color: Color(0xFF305163),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
                     initialValue: widget.barang?.nama,
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
+                    style: TextStyle(color: Colors.white),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Nama Barang',
-                      labelStyle: TextStyle(color: Colors.white), // Ubah warna label
+                      labelStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white60, width: 1)
+                        borderSide: BorderSide(color: Colors.white60, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Harus diisi' : null,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? 'Harus diisi'
+                                : null,
                     onSaved: (value) => _nama = value!,
                   ),
                 ),
               ),
+              SizedBox(height: 10),
               Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 color: Color(0xFF305163),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
                     initialValue: widget.barang?.kode_brg,
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
+                    style: TextStyle(color: Colors.white),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Kode Barang',
-                      labelStyle: TextStyle(color: Colors.white), // Ubah warna label
+                      labelStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white60, width: 1)
+                        borderSide: BorderSide(color: Colors.white60, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Harus diisi' : null,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? 'Harus diisi'
+                                : null,
                     onSaved: (value) => _kode_brg = value!,
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 color: Color(0xFF305163),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
-                    initialValue: widget.barang?.stok.toString(),
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
+                    initialValue: widget.barang?.stok.toString() ?? '0',
+                    style: TextStyle(color: Colors.white),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Stok Barang',
-                      labelStyle: TextStyle(color: Colors.white), // Ubah warna label
+                      labelStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white60, width: 1)
+                        borderSide: BorderSide(color: Colors.white60, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (value) => value == null || int.tryParse(value) == null ? 'Masukkan angka' : null,
+                    validator:
+                        (value) =>
+                            value == null || int.tryParse(value) == null
+                                ? 'Masukkan angka'
+                                : null,
                     onSaved: (value) => _stok = int.parse(value!),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 color: Color(0xFF305163),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
-                    initialValue: widget.barang?.harga_jual.toString(),
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
+                    initialValue: widget.barang?.harga_jual.toString() ?? '0',
+                    style: TextStyle(color: Colors.white),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Harga Jual Barang',
-                      labelStyle: TextStyle(color: Colors.white), // Ubah warna label
+                      labelStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white60, width: 1)
+                        borderSide: BorderSide(color: Colors.white60, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) => value == null || double.tryParse(value) == null ? 'Masukkan harga valid' : null,
+                    keyboardType: TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    validator:
+                        (value) =>
+                            value == null || double.tryParse(value) == null
+                                ? 'Masukkan harga valid'
+                                : null,
                     onSaved: (value) => _harga_jual = double.parse(value!),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 color: Color(0xFF305163),
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
-                    initialValue: widget.barang?.harga_modal.toString(),
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
+                    initialValue: widget.barang?.harga_modal.toString() ?? '0',
+                    style: TextStyle(color: Colors.white),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Harga Modal Barang',
-                      labelStyle: TextStyle(color: Colors.white), // Ubah warna label
+                      labelStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white60, width: 1)
+                        borderSide: BorderSide(color: Colors.white60, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) => value == null || double.tryParse(value) == null ? 'Masukkan harga valid' : null,
+                    keyboardType: TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    validator:
+                        (value) =>
+                            value == null || double.tryParse(value) == null
+                                ? 'Masukkan harga valid'
+                                : null,
                     onSaved: (value) => _harga_modal = double.parse(value!),
                   ),
                 ),
               ),
-            
               SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF305163)
+                  backgroundColor: Color(0xFF305163),
+                  minimumSize: Size(double.infinity, 50),
                 ),
                 child: Text(
                   isEdit ? 'Simpan Perubahan' : 'Tambah Barang',
-                  style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                  ),
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    final barangProvider = Provider.of<BarangProvider>(context, listen: false);
-                    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-                    final user_id = profileProvider.profile?.id_user ?? 0;
-
-                    if (isEdit) {
-                      await barangProvider.editBarang(
-                        widget.barang!.id_brg,
-                        Barang(
-                          id_brg: widget.barang!.id_brg,
-                          user_id: widget.barang!.user_id,
-                          nama: _nama,
-                          kode_brg: _kode_brg,
-                          stok: _stok,
-                          harga_jual: _harga_jual,
-                          harga_modal: _harga_modal,
-                        ),
-                      );
-                    } else {
-                      await barangProvider.tambahBarang(
-                        Barang(
-                          id_brg: DateTime.now().millisecondsSinceEpoch,
-                          user_id: user_id,
-                          nama: _nama,
-                          kode_brg: _kode_brg,
-                          stok: _stok,
-                          harga_jual: _harga_jual,
-                          harga_modal: _harga_modal,
-                        ),
-                      );
-                    }
-                    Navigator.of(context).pop();
-                  }
-                },
-              )
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                onPressed: _simpanForm,
+              ),
             ],
           ),
         ),
