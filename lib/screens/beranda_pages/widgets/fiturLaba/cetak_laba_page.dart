@@ -2,6 +2,7 @@ import 'package:SIMANIS_V1/helpers/pdf_export_service.dart';
 import 'package:SIMANIS_V1/providers/beban_provider.dart';
 import 'package:SIMANIS_V1/providers/profil_provider.dart';
 import 'package:SIMANIS_V1/providers/transaksi_provider.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/fiturLaba/report_bulanan_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -46,9 +47,8 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
     await transaksiProvider.fetchAndCalculateLaba();
 
     Map<String, Map<String, double>> data = {};
-
     for (var trx in transaksiProvider.transaksiList) {
-      String monthYear = DateFormat('MMMM yyyy').format(trx.tanggal);
+      String monthYear = DateFormat('MMMM yyyy', 'id_ID').format(trx.tanggal);
       data.putIfAbsent(
         monthYear,
         () => {
@@ -57,7 +57,6 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
           'month': trx.tanggal.month.toDouble(),
         },
       );
-
       data[monthYear]!['labaKotor'] =
           (data[monthYear]!['labaKotor'] ?? 0) + trx.totalJual;
     }
@@ -108,6 +107,41 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
       });
   }
 
+  void _handleIsiBeban(String monthYear) {
+    final date = DateTime(
+      monthlyData[monthYear]!['year']!.toInt(),
+      monthlyData[monthYear]!['month']!.toInt(),
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BebanFormScreen(selectedDate: date)),
+    ).then((_) => _loadData());
+  }
+
+  Future<void> _handleLihatLaporan(String monthYear) async {
+    final date = DateTime(
+      monthlyData[monthYear]!['year']!.toInt(),
+      monthlyData[monthYear]!['month']!.toInt(),
+    );
+    final transaksiProvider = Provider.of<TransaksiProvider>(
+      context,
+      listen: false,
+    );
+    final bebanProvider = Provider.of<BebanProvider>(context, listen: false);
+
+    await transaksiProvider.fetchAndCalculateLaba(
+      startDate: DateTime(date.year, date.month, 1).toIso8601String(),
+      endDate:
+          DateTime(date.year, date.month + 1, 0, 23, 59, 59).toIso8601String(),
+    );
+    await bebanProvider.fetchBebanByMonth(userId, date.year, date.month);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => LaporanDetailScreen(date: date)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(
@@ -119,7 +153,8 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
         monthlyData.keys.toList()..sort(
           (a, b) => DateFormat(
             'MMMM yyyy',
-          ).parse(b).compareTo(DateFormat('MMMM yyyy').parse(a)),
+            'id_ID',
+          ).parse(b).compareTo(DateFormat('MMMM yyyy', 'id_ID').parse(a)),
         );
 
     return Scaffold(
@@ -158,149 +193,16 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
                           double labaKotor =
                               monthlyData[monthYear]!['labaKotor']!;
 
-                          return Card(
-                            margin: EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            color: Color(0xFFD9E4E1),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    monthYear,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 16),
-
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "Beban",
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                      Spacer(),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          final date = DateTime(
-                                            monthlyData[monthYear]!['year']!
-                                                .toInt(),
-                                            monthlyData[monthYear]!['month']!
-                                                .toInt(),
-                                          );
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (_) => BebanFormScreen(
-                                                    selectedDate: date,
-                                                  ),
-                                            ),
-                                          ).then((_) => _loadData());
-                                        },
-                                        child: Text("Isi"),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 4),
-
-                                  _buildInfoRow(
-                                    "Laba",
-                                    formatter.format(labaKotor),
-                                  ),
-                                  SizedBox(height: 16),
-
-                                  Row(
-                                    children: [
-                                      (_isDownloading &&
-                                              _downloadingMonth == monthYear)
-                                          ? Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                              ),
-                                            ),
-                                          )
-                                          : IconButton(
-                                            onPressed:
-                                                () => _handleShare(monthYear),
-                                            icon: Icon(Icons.share),
-                                          ),
-
-                                      Spacer(),
-
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          final date = DateTime(
-                                            monthlyData[monthYear]!['year']!
-                                                .toInt(),
-                                            monthlyData[monthYear]!['month']!
-                                                .toInt(),
-                                          );
-                                          await Provider.of<TransaksiProvider>(
-                                            context,
-                                            listen: false,
-                                          ).fetchAndCalculateLaba(
-                                            startDate:
-                                                DateTime(
-                                                  date.year,
-                                                  date.month,
-                                                  1,
-                                                ).toIso8601String(),
-                                            endDate:
-                                                DateTime(
-                                                  date.year,
-                                                  date.month + 1,
-                                                  0,
-                                                  23,
-                                                  59,
-                                                  59,
-                                                ).toIso8601String(),
-                                          );
-                                          await Provider.of<BebanProvider>(
-                                            context,
-                                            listen: false,
-                                          ).fetchBebanByMonth(
-                                            userId,
-                                            date.year,
-                                            date.month,
-                                          );
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (_) => LaporanDetailScreen(
-                                                    date: date,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        child: Text("Lihat"),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                          return LaporanBulananCard(
+                            monthYear: monthYear,
+                            labaKotor: labaKotor,
+                            formatter: formatter,
+                            isDownloading: _isDownloading,
+                            downloadingMonth: _downloadingMonth,
+                            onIsiBeban: () => _handleIsiBeban(monthYear),
+                            onLihatLaporan:
+                                () => _handleLihatLaporan(monthYear),
+                            onShare: () => _handleShare(monthYear),
                           );
                         },
                       ),
@@ -308,22 +210,6 @@ class _CetakLabaPageState extends State<CetakLabaPage> {
                   ],
                 ),
               ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(fontSize: 16)),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
     );
   }
 }
