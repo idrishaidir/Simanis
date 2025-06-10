@@ -64,7 +64,7 @@ class DatabaseHelper {
         user_id INT,
         nama TEXT(50),
         kode_brg TEXT(20) UNIQUE,
-        stok INTEGER(10) DEFAULT 0,
+        stok INTEGER(15) DEFAULT 0,
         harga_jual REAL,
         harga_modal REAL
       )

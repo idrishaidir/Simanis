@@ -116,12 +116,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             vertical: 12,
                           ),
                         ),
+                        // keyboardType: TextInputType.emailAddress,
+                        // validator:
+                        //     (value) =>
+                        //         value == null || !value.contains('@')
+                        //             ? 'Email tidak valid'
+                        //             : null,
                         keyboardType: TextInputType.emailAddress,
-                        validator:
-                            (value) =>
-                                value == null || !value.contains('@')
-                                    ? 'Email tidak valid'
-                                    : null,
+                        maxLength: 50,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email tidak boleh kosong';
+                          }
+                          if (value.length > 50) {
+                            return 'Email tidak boleh lebih dari 50 karakter';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Email tidak valid';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -144,11 +158,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         obscureText: true,
-                        validator:
-                            (value) =>
-                                value == null || value.length < 6
-                                    ? 'Minimal 6 karakter'
-                                    : null,
+                        maxLength: 35,
+                        validator: (value){
+                          if (value == null || value.isEmpty) {
+                              return 'Password tidak boleh kosong';
+                          }
+                          if (value.length < 6) {
+                              return 'Minimal 6 karakter';
+                          }
+                          if (value.length > 35) {
+                              return 'Password tidak boleh lebih dari 50 karakter';
+                          }
+                        }
+                            //     value == null || value.length < 6
+                            //         ? 'Minimal 6 karakter'
+                            //         : null,
                       ),
                       const SizedBox(height: 32),
                       SizedBox(

@@ -134,6 +134,7 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nama Barang',
                       labelStyle: TextStyle(color: Colors.white),
+                      counterStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white60, width: 1),
@@ -142,11 +143,22 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    validator:
-                        (value) =>
-                            value == null || value.isEmpty
-                                ? 'Harus diisi'
-                                : null,
+                    maxLength: 50,
+                    validator: (value){
+                      if (value == null || value.isEmpty) {
+                        return 'Nama Barang Harus diisi';
+                      }
+                      if (value.length == 1) {
+                        return 'Nama Barang terlalu pendek';
+                      }
+                      if (value.length > 50) {
+                        return 'Nama Barang terlalu panjang';
+                      }
+                      return null;
+                    },
+                            // value == null || value.isEmpty
+                            //     ? 'Harus diisi'
+                            //     : null,
                     onSaved: (value) => _nama = value!,
                   ),
                 ),
@@ -167,6 +179,7 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     decoration: InputDecoration(
                       labelText: 'Kode Barang',
                       labelStyle: TextStyle(color: Colors.white),
+                      counterStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white60, width: 1),
@@ -175,11 +188,19 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                         borderSide: BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    validator:
-                        (value) =>
-                            value == null || value.isEmpty
-                                ? 'Harus diisi'
-                                : null,
+                    maxLength: 20,
+                    validator: (value){
+                      if (value == null || value.isEmpty) {
+                        return 'Kode Barang Harus diisi';
+                      }
+                      if (value.length == 1) {
+                        return 'Kode Barang terlalu pendek';
+                      }
+                      if (value.length > 20) {
+                        return 'Kode Barang terlalu panjang';
+                      }
+                      return null;
+                    },
                     onSaved: (value) => _kode_brg = value!,
                   ),
                 ),
@@ -200,6 +221,7 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     decoration: InputDecoration(
                       labelText: 'Stok Barang',
                       labelStyle: TextStyle(color: Colors.white),
+                      counterStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white60, width: 1),
@@ -209,11 +231,16 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                       ),
                     ),
                     keyboardType: TextInputType.number,
-                    validator:
-                        (value) =>
-                            value == null || int.tryParse(value) == null
-                                ? 'Masukkan angka'
-                                : null,
+                    maxLength: 15,
+                    validator: (value){
+                      if (value == null || value.isEmpty) {
+                        return 'Stok Barang Harus diisi';
+                      }
+                      if (value.length > 15) {
+                        return 'Stok Barang terlalu Banyak';
+                      }
+                      return null;
+                    },
                     onSaved: (value) => _stok = int.parse(value!),
                   ),
                 ),
@@ -234,6 +261,7 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     decoration: InputDecoration(
                       labelText: 'Harga Jual Barang',
                       labelStyle: TextStyle(color: Colors.white),
+                      counterStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white60, width: 1),
@@ -245,11 +273,16 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    validator:
-                        (value) =>
-                            value == null || double.tryParse(value) == null
-                                ? 'Masukkan harga valid'
-                                : null,
+                    maxLength: 20,
+                    validator: (value){
+                      if (value == null || value.isEmpty) {
+                        return 'Harga Jual Barang Harus diisi';
+                      }
+                      if (value.length > 20) {
+                        return 'Harga Jual Barang terlalu Mahal';
+                      }
+                      return null;
+                    },
                     onSaved: (value) => _harga_jual = double.parse(value!),
                   ),
                 ),
@@ -270,6 +303,7 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     decoration: InputDecoration(
                       labelText: 'Harga Modal Barang',
                       labelStyle: TextStyle(color: Colors.white),
+                      counterStyle: TextStyle(color: Colors.white),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white60, width: 1),
@@ -281,11 +315,16 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    validator:
-                        (value) =>
-                            value == null || double.tryParse(value) == null
-                                ? 'Masukkan harga valid'
-                                : null,
+                    maxLength: 20,
+                    validator: (value){
+                      if (value == null || value.isEmpty) {
+                        return 'Harga Modal Barang Harus diisi';
+                      }
+                      if (value.length > 20) {
+                        return 'Harga Modal Barang terlalu Mahal';
+                      }
+                      return null;
+                    },
                     onSaved: (value) => _harga_modal = double.parse(value!),
                   ),
                 ),
@@ -296,11 +335,11 @@ class _BarangFormScreenState extends State<BarangFormScreen> {
                   backgroundColor: Color(0xFF305163),
                   minimumSize: Size(double.infinity, 50),
                 ),
+                onPressed: _simpanForm,
                 child: Text(
                   isEdit ? 'Simpan Perubahan' : 'Tambah Barang',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-                onPressed: _simpanForm,
               ),
             ],
           ),

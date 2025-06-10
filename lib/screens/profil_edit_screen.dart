@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/profil_model.dart';
 import '../providers/profil_provider.dart';
@@ -93,6 +94,16 @@ class _ProfilEditScreenState extends State<ProfilEditScreen> {
       source: ImageSource.gallery,
     );
     if (pickedFile != null) {
+    String filePath = pickedFile.path;
+
+    // Batasi panjang path, misalnya maksimal 255 karakter
+    if (filePath.length > 150) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Path foto terlalu panjang (maks 150 karakter)')),
+      );
+      return;
+    }
+
       final profileProvider = Provider.of<ProfileProvider>(
         context,
         listen: false,
