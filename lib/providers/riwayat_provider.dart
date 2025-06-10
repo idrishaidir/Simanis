@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../config/database.dart';
 import '../models/beban_model.dart';
-import '../models/riwayat_model.dart'; // Pastikan import ini ada
+import '../models/riwayat_model.dart';
 import '../models/transaksi_model.dart';
 
 class RiwayatProvider with ChangeNotifier {
@@ -12,62 +12,49 @@ class RiwayatProvider with ChangeNotifier {
   bool _isLoading = false;
 
   String _queryPencarian = '';
-  DateTime? _tanggalMulai;
-  DateTime? _tanggalAkhir;
 
   List<AktivitasItem> get aktivitas => _aktivitasYangTampil;
   bool get isLoading => _isLoading;
 
   double get totalKeuntungan {
     if (_semuaAktivitas.isEmpty) return 0.0;
-
     double pendapatan = _semuaAktivitas
         .where((item) => item.tipe == 'Uang Masuk')
         .fold(0.0, (sum, item) => sum + item.jumlah);
-
     double pengeluaran = _semuaAktivitas
         .where((item) => item.tipe == 'Uang Keluar')
         .fold(0.0, (sum, item) => sum + item.jumlah);
-
     return pendapatan - pengeluaran;
   }
 
   double get keuntunganHariIni {
     if (_semuaAktivitas.isEmpty) return 0.0;
-
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-
     final aktivitasHariIni =
         _semuaAktivitas.where((item) {
           return item.tanggal.year == today.year &&
               item.tanggal.month == today.month &&
               item.tanggal.day == today.day;
         }).toList();
-
     double pendapatan = aktivitasHariIni
         .where((item) => item.tipe == 'Uang Masuk')
         .fold(0.0, (sum, item) => sum + item.jumlah);
-
     double pengeluaran = aktivitasHariIni
         .where((item) => item.tipe == 'Uang Keluar')
         .fold(0.0, (sum, item) => sum + item.jumlah);
-
     return pendapatan - pengeluaran;
   }
 
   Future<void> fetchAktivitas(int userId) async {
     _isLoading = true;
     notifyListeners();
-
     final db = await DatabaseHelper.database;
-
     final List<Map<String, dynamic>> transaksiData = await db.query(
       'transaksi',
       where: 'user_id = ?',
       whereArgs: [userId.toString()],
     );
-
     final List<AktivitasItem> aktivitasMasuk =
         transaksiData.map((item) {
           final trx = Transaksi.fromMap(item);
@@ -78,13 +65,11 @@ class RiwayatProvider with ChangeNotifier {
             tanggal: trx.tanggal,
           );
         }).toList();
-
     final List<Map<String, dynamic>> bebanData = await db.query(
       'beban',
       where: 'user_id = ?',
       whereArgs: [userId],
     );
-
     final List<AktivitasItem> aktivitasKeluar =
         bebanData.map((item) {
           final beban = Beban.fromMap(item);
@@ -95,11 +80,9 @@ class RiwayatProvider with ChangeNotifier {
             tanggal: beban.tanggal_beban,
           );
         }).toList();
-
     _semuaAktivitas = [...aktivitasMasuk, ...aktivitasKeluar];
     _semuaAktivitas.sort((a, b) => b.tanggal.compareTo(a.tanggal));
-
-    resetFilter();
+    _aktivitasYangTampil = _semuaAktivitas;
     _isLoading = false;
     notifyListeners();
   }
@@ -110,9 +93,6 @@ class RiwayatProvider with ChangeNotifier {
     DateTime? tanggalAkhir,
   }) {
     _queryPencarian = query?.toLowerCase() ?? _queryPencarian;
-    _tanggalMulai = tanggalMulai ?? _tanggalMulai;
-    _tanggalAkhir = tanggalAkhir ?? _tanggalAkhir;
-
     List<AktivitasItem> hasilFilter = _semuaAktivitas;
 
     if (_queryPencarian.isNotEmpty) {
@@ -130,18 +110,26 @@ class RiwayatProvider with ChangeNotifier {
           }).toList();
     }
 
-    if (_tanggalMulai != null) {
+    if (tanggalMulai != null) {
+      final startDate = DateTime(
+        tanggalMulai.year,
+        tanggalMulai.month,
+        tanggalMulai.day,
+      );
       hasilFilter =
           hasilFilter
-              .where((item) => !item.tanggal.isBefore(_tanggalMulai!))
+              .where((item) => !item.tanggal.isBefore(startDate))
               .toList();
     }
-    if (_tanggalAkhir != null) {
-      final tanggalAkhirInklusif = _tanggalAkhir!.add(Duration(days: 1));
+
+    if (tanggalAkhir != null) {
+      final endDate = DateTime(
+        tanggalAkhir.year,
+        tanggalAkhir.month,
+        tanggalAkhir.day,
+      ).add(Duration(days: 1));
       hasilFilter =
-          hasilFilter
-              .where((item) => item.tanggal.isBefore(tanggalAkhirInklusif))
-              .toList();
+          hasilFilter.where((item) => item.tanggal.isBefore(endDate)).toList();
     }
 
     _aktivitasYangTampil = hasilFilter;
@@ -150,8 +138,7 @@ class RiwayatProvider with ChangeNotifier {
 
   void resetFilter() {
     _queryPencarian = '';
-    _tanggalMulai = null;
-    _tanggalAkhir = null;
     _aktivitasYangTampil = _semuaAktivitas;
+    notifyListeners();
   }
 }

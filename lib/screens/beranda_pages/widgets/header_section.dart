@@ -24,9 +24,7 @@ class HeaderSection extends StatelessWidget {
         Widget avatarChild = Icon(Icons.person, size: 30, color: Colors.grey);
 
         if (profil != null) {
-          namaUsaha =
-              profil
-                  .nama_usaha; // Tidak perlu '??' jika di model sudah di-handle
+          namaUsaha = profil.nama_usaha;
           final fotoPath = profil.foto_profil;
 
           if (fotoPath.isNotEmpty) {
@@ -72,8 +70,6 @@ class HeaderSection extends StatelessWidget {
               namaUsaha,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            const Spacer(),
-            const Icon(Icons.notifications_none),
           ],
         );
       },

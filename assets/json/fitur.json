@@ -5,7 +5,7 @@
     { "title": "Pembelajaran", "icon": "assets/icons/pembelajran.png" }
   ],
   "fiturTambahan": [
-    { "title": "Catatan Hutang", "icon": "assets/icons/catatan.png" },
+    { "title": "Catatan", "icon": "assets/icons/catatan.png" },
     { "title": "Riwayat Aktivitas", "icon": "assets/icons/riwayat.png" }
   ]
 }

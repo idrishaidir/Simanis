@@ -86,13 +86,15 @@ class _RiwayatAktivitasPageState extends State<RiwayatAktivitasPage> {
                             _pickedTanggalMulai = null;
                             _pickedTanggalAkhir = null;
                           });
-                          riwayatProvider.resetFilter();
                           riwayatProvider.filterAktivitas(
                             query: _searchController.text,
+                            tanggalMulai: null,
+                            tanggalAkhir: null,
                           );
                           Navigator.of(context).pop();
                         },
                       ),
+
                       ElevatedButton(
                         child: Text('Terapkan'),
                         onPressed: () {

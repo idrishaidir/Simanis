@@ -1,19 +1,20 @@
 import 'dart:convert';
 
-import 'package:SIMANIS_V1/providers/riwayat_provider.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/widgets/fiturLaba/cetak_laba_page.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/widgets/berita/berita_section.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/widgets/fitur_menu_section.dart.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/widgets/keuntungan_card.dart';
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter/services.dart' show rootBundle;
-
 import 'package:SIMANIS_V1/providers/profil_provider.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/riwayat_aktivitas.dart';
-import 'package:SIMANIS_V1/screens/beranda_pages/catatan_hutang.dart';
+import 'package:SIMANIS_V1/providers/riwayat_provider.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/berita/berita_section.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/catatan/catatan_list_screen.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/fiturLaba/cetak_laba_page.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/fitur_menu_section.dart.dart';
 import 'package:SIMANIS_V1/screens/beranda_pages/widgets/header_section.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/keuntungan_card.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/widgets/pembelajaran/simanis_academy_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart';
+
+import 'package:SIMANIS_V1/providers/catatan_provider.dart';
+import 'package:SIMANIS_V1/screens/beranda_pages/riwayat_aktivitas.dart';
 
 class BerandaPage extends StatefulWidget {
   @override
@@ -71,15 +72,34 @@ class _BerandaPageState extends State<BerandaPage> {
         context,
         MaterialPageRoute(builder: (context) => CetakLabaPage()),
       );
-    } else if (title == "Catatan Hutang") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => CatatanHutangPage()),
-      );
+    } else if (title == "Catatan") {
+      final userId =
+          Provider.of<ProfileProvider>(context, listen: false).profile?.id_user;
+      if (userId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ChangeNotifierProvider(
+                  create: (_) => CatatanProvider(userId),
+                  child: CatatanListScreen(),
+                ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat profil pengguna.')),
+        );
+      }
     } else if (title == "Riwayat Aktivitas") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => RiwayatAktivitasPage()),
+      );
+    } else if (title == "Pembelajaran") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SimanisAcademyScreen()),
       );
     } else {
       ScaffoldMessenger.of(

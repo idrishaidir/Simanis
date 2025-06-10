@@ -92,5 +92,15 @@ class DatabaseHelper {
         tanggal_beban TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE catatan (
+      id Integer Primary KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      last_edited TEXT NOT NULL
+      )
+    ''');
   }
 }

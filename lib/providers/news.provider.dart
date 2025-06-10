@@ -7,7 +7,7 @@ class NewsProvider with ChangeNotifier {
   bool isDataEmpty = true;
 
   bool isLoading = true;
-  bool isLoadingSearch = true;
+  bool isLoadingSearch = false;
   TopNewsModel? resNews;
   TopNewsModel? resSearch;
   setLoading(data) {

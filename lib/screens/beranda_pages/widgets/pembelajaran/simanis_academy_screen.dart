@@ -57,20 +57,12 @@ class _SimanisAcademyScreenState extends State<SimanisAcademyScreen> {
             ),
             child: InkWell(
               onTap: () {
-                if (topic.materials.isNotEmpty) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MaterialDetailScreen(topic: topic),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Materi untuk topik ini belum tersedia.'),
-                    ),
-                  );
-                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MaterialDetailScreen(topic: topic),
+                  ),
+                );
               },
               borderRadius: BorderRadius.circular(12),
               child: Padding(

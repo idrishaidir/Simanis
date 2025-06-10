@@ -53,15 +53,26 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
+                //...
                 Expanded(
                   child:
                       news.isLoadingSearch
                           ? const Center(child: CircularProgressIndicator())
+                          : news.resSearch == null
+                          ? const Center(
+                            // Kondisi awal saat belum ada pencarian
+                            child: Text(
+                              'Silakan mulai mencari berita.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          )
                           : news.isDataEmpty
                           ? const Center(
+                            // Kondisi jika hasil pencarian kosong
                             child: Text('Tidak ada hasil ditemukan'),
                           )
                           : ListView.builder(
+                            // Kondisi jika ada hasil
                             itemCount: news.resSearch?.articles?.length ?? 0,
                             itemBuilder: (context, index) {
                               final article = news.resSearch!.articles![index];
@@ -103,6 +114,7 @@ class _SearchPageState extends State<SearchPage> {
                                                   ) => const Icon(
                                                     Icons.broken_image,
                                                     size: 80,
+                                                    color: Colors.grey,
                                                   ),
                                             ),
                                           ),
@@ -127,6 +139,7 @@ class _SearchPageState extends State<SearchPage> {
                             },
                           ),
                 ),
+                //...
               ],
             ),
           ),

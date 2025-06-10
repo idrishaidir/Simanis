@@ -24,15 +24,6 @@ class LaporanDetailScreen extends StatelessWidget {
     );
     final bebanProvider = Provider.of<BebanProvider>(context, listen: false);
 
-    final Map<String, double> aggregatedBeban = {};
-    for (var beban in bebanProvider.bebanList) {
-      aggregatedBeban.update(
-        beban.nama_beban,
-        (value) => value + beban.jumlah_beban,
-        ifAbsent: () => beban.jumlah_beban,
-      );
-    }
-
     double totalPenjualan = transaksiProvider.transaksiList.fold(
       0,
       (sum, trx) => sum + trx.totalJual,
@@ -41,13 +32,29 @@ class LaporanDetailScreen extends StatelessWidget {
       0,
       (sum, trx) => sum + trx.totalModal,
     );
-    double totalBebanOperasional = bebanProvider.bebanList.fold(
+
+    double labaKotor = totalPenjualan - hpp;
+
+    final bebanOperasionalSaja =
+        bebanProvider.bebanList
+            .where((beban) => !beban.nama_beban.startsWith("Pembelian Stok:"))
+            .toList();
+
+    final Map<String, double> aggregatedBeban = {};
+    for (var beban in bebanOperasionalSaja) {
+      aggregatedBeban.update(
+        beban.nama_beban,
+        (value) => value + beban.jumlah_beban,
+        ifAbsent: () => beban.jumlah_beban,
+      );
+    }
+
+    double totalBebanOperasional = bebanOperasionalSaja.fold(
       0,
       (sum, beban) => sum + beban.jumlah_beban,
     );
-    double totalBeban = hpp + totalBebanOperasional;
-    double labaKotor = totalPenjualan;
-    double labaBersih = totalPenjualan - totalBeban;
+
+    double labaBersih = labaKotor - totalBebanOperasional;
 
     Widget _buildRow(String label, String value, {bool isBold = false}) {
       return Padding(
@@ -149,7 +156,7 @@ class LaporanDetailScreen extends StatelessWidget {
                 Divider(),
                 _buildRow(
                   "Total Beban",
-                  formatter.format(totalBeban),
+                  formatter.format(totalBebanOperasional),
                   isBold: true,
                 ),
                 SizedBox(height: 16),
