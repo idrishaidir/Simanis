@@ -45,7 +45,7 @@ class _CatatanListScreenState extends State<CatatanListScreen> {
       backgroundColor: Color(0xFFC4DCD6),
       appBar: AppBar(
         title: Text('Catatan Saya'),
-        backgroundColor: Color(0xFF294855),
+        backgroundColor: Color(0xFFC4DCD6),
       ),
 
       body:
@@ -156,7 +156,7 @@ class _CatatanListScreenState extends State<CatatanListScreen> {
                 ),
               ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: Icon(Icons.add,color: Colors.white),
         backgroundColor: Color(0xFF294855),
         onPressed: () {
           Navigator.of(context).push(

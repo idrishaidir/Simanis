@@ -2,7 +2,7 @@
   {
     "id": "pencatatan_keuangan",
     "title": "Pencatatan Keuangan",
-    "image_placeholder": "",
+    "image_placeholder": "assets/images/pembelajaran/pencatatan.jpg",
     "materials": [
       {
         "material_id": "pk_1",
@@ -19,7 +19,7 @@
   {
     "id": "laba",
     "title": "Laba",
-    "image_placeholder": "",
+    "image_placeholder": "assets/images/pembelajaran/laba.jpg",
     "materials": [
       {
         "material_id": "laba_1",
@@ -31,25 +31,26 @@
   {
     "id": "arus_kas",
     "title": "Pengelolaan Arus Kas",
-    "image_placeholder": "",
+    "image_placeholder": 
+    "assets/images/pembelajaran/kas.jpg",
     "materials": []
   },
   {
     "id": "modal_usaha",
     "title": "Modal Usaha",
-    "image_placeholder": "",
+    "image_placeholder": "assets/images/pembelajaran/modal.jpg",
     "materials": []
   },
   {
     "id": "dasar_pajak",
     "title": "Dasar-dasar Pajak",
-    "image_placeholder": "",
+    "image_placeholder": "assets/images/pembelajaran/pajak.jpg",
     "materials": []
   },
   {
     "id": "dasar_akuntansi",
     "title": "Dasar-dasar Akuntansi",
-    "image_placeholder": "",
+    "image_placeholder": "assets/images/pembelajaran/akuntansi.jpg",
     "materials": [
       {
         "material_id": "da_1",

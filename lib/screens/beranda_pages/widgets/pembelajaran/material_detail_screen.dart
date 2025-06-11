@@ -68,9 +68,7 @@ class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              child: Text(widget.topic.title.substring(0, 1)),
-            ),
+            
           ),
         ],
       ),

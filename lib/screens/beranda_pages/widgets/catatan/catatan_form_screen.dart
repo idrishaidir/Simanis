@@ -62,7 +62,7 @@ class _CatatanFormScreenState extends State<CatatanFormScreen> {
       backgroundColor: Color(0xFFC4DCD6),
       appBar: AppBar(
         title: Text(widget.catatan == null ? 'Tambah Catatan' : 'Edit Catatan'),
-        backgroundColor: Color(0xFF294855),
+        backgroundColor: Color(0xFFC4DCD6),
         actions: [IconButton(icon: Icon(Icons.save), onPressed: _saveForm)],
       ),
       body: Padding(

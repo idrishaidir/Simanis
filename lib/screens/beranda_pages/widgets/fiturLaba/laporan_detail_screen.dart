@@ -173,6 +173,13 @@ class LaporanDetailScreen extends StatelessWidget {
                 Divider(thickness: 2, color: Colors.black87),
 
                 _buildRow(
+                  "LABA KOTOR",
+                  formatter.format(totalPendapatan),
+                  isBold: true,
+                  textColor:
+                       Colors.red[700],
+                ),
+                _buildRow(
                   "LABA BERSIH",
                   formatter.format(labaBersih),
                   isBold: true,

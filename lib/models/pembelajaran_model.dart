@@ -3,11 +3,13 @@ import 'dart:convert';
 class TopikPembelajaran {
   final String id;
   final String title;
+  final String image_placeholder;
   final List<Materi> materials;
 
   TopikPembelajaran({
     required this.id,
     required this.title,
+    required this.image_placeholder,
     required this.materials,
   });
 
@@ -19,6 +21,7 @@ class TopikPembelajaran {
     return TopikPembelajaran(
       id: map['id'],
       title: map['title'],
+      image_placeholder: map['image_placeholder'],
       materials: materialList,
     );
   }

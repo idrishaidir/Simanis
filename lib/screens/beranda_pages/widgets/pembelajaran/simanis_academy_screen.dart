@@ -86,7 +86,19 @@ class _SimanisAcademyScreenState extends State<SimanisAcademyScreen> {
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.school, color: Colors.grey.shade600),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: topic.image_placeholder.isNotEmpty
+                        ? Image.asset(
+                          topic.image_placeholder,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace){
+                            return Icon(Icons.school, color: Colors.grey.shade600, size:30);
+                          },
+                        )
+                        : Icon(Icons.school, color:Colors.grey.shade600, size:30),
+                      ),
+
                     ),
                   ],
                 ),
