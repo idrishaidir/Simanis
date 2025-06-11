@@ -119,6 +119,11 @@ class PdfExportService {
               pw.Divider(thickness: 2),
 
               _buildPdfRow(
+                "LABA KOTOR",
+                formatter.format(totalPendapatan),
+                isBold: true,
+              ),
+              _buildPdfRow(
                 "LABA BERSIH",
                 formatter.format(labaBersih),
                 isBold: true,
