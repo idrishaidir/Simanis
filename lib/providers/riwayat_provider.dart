@@ -40,10 +40,7 @@ class RiwayatProvider with ChangeNotifier {
     double pendapatan = aktivitasHariIni
         .where((item) => item.tipe == 'Uang Masuk')
         .fold(0.0, (sum, item) => sum + item.jumlah);
-    double pengeluaran = aktivitasHariIni
-        .where((item) => item.tipe == 'Uang Keluar')
-        .fold(0.0, (sum, item) => sum + item.jumlah);
-    return pendapatan - pengeluaran;
+    return pendapatan;
   }
 
   Future<void> fetchAktivitas(int userId) async {

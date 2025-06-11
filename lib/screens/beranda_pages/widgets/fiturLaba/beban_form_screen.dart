@@ -72,7 +72,7 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
       backgroundColor: Color(0xFFC4DCD6),
       appBar: AppBar(
         title: Text('Isi Beban Usaha'),
-        backgroundColor: Color(0xFF294855),
+        backgroundColor: Color(0xFFC4DCD6),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -84,7 +84,7 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Nama Beban",
+                    "Nama Beban (1 Bulan)",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextFormField(
@@ -99,7 +99,7 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    "Jumlah Beban",
+                    "Jumlah Beban (1 Bulan)",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextFormField(
