@@ -12,6 +12,21 @@ class BebanProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateBeban(Beban beban) async {
+    final db = await DatabaseHelper.database;
+    await db.update(
+      'beban',
+      beban.toMap(),
+      where: 'id_beban = ?',
+      whereArgs: [beban.id_beban],
+    );
+    final index = _bebanList.indexWhere((b) => b.id_beban == beban.id_beban);
+    if (index != -1) {
+      _bebanList[index] = beban;
+      notifyListeners();
+    }
+  }
+
   Future<List<Beban>> fetchBebanByMonth(int userId, int year, int month) async {
     final db = await DatabaseHelper.database;
 
@@ -27,5 +42,12 @@ class BebanProvider with ChangeNotifier {
     _bebanList = data.map((item) => Beban.fromMap(item)).toList();
     notifyListeners();
     return _bebanList;
+  }
+
+  Future<void> deleteBeban(int idBeban) async {
+    final db = await DatabaseHelper.database;
+    await db.delete('beban', where: 'id_beban = ?', whereArgs: [idBeban]);
+    _bebanList.removeWhere((beban) => beban.id_beban == idBeban);
+    notifyListeners();
   }
 }

@@ -21,6 +21,8 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
   late int userId;
   late BebanProvider bebanProvider;
 
+  Beban? _editingBeban;
+
   @override
   void initState() {
     super.initState();
@@ -37,26 +39,59 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
     );
   }
 
-  void _submitBeban() {
+  void _startEditing(Beban beban) {
+    setState(() {
+      _editingBeban = beban;
+      _namaBebanController.text = beban.nama_beban;
+      _jumlahBebanController.text = beban.jumlah_beban.toStringAsFixed(0);
+    });
+  }
+
+  void _cancelEditing() {
+    setState(() {
+      _editingBeban = null;
+      _namaBebanController.clear();
+      _jumlahBebanController.clear();
+      _formKey.currentState?.reset();
+    });
+  }
+
+  void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final beban = Beban(
-        user_id: userId,
-        nama_beban: _namaBebanController.text,
-        jumlah_beban: double.parse(_jumlahBebanController.text),
-        tanggal_beban: widget.selectedDate,
-      );
-      bebanProvider.addBeban(beban).then((_) {
-        bebanProvider.fetchBebanByMonth(
-          userId,
-          widget.selectedDate.year,
-          widget.selectedDate.month,
+      if (_editingBeban == null) {
+        final beban = Beban(
+          user_id: userId,
+          nama_beban: _namaBebanController.text,
+          jumlah_beban: double.parse(_jumlahBebanController.text),
+          tanggal_beban: widget.selectedDate,
         );
-        _namaBebanController.clear();
-        _jumlahBebanController.clear();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Beban berhasil ditambahkan')));
-      });
+        bebanProvider.addBeban(beban).then((_) {
+          bebanProvider.fetchBebanByMonth(
+            userId,
+            widget.selectedDate.year,
+            widget.selectedDate.month,
+          );
+          _namaBebanController.clear();
+          _jumlahBebanController.clear();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Beban berhasil ditambahkan')));
+        });
+      } else {
+        final updatedBeban = Beban(
+          id_beban: _editingBeban!.id_beban,
+          user_id: _editingBeban!.user_id,
+          nama_beban: _namaBebanController.text,
+          jumlah_beban: double.parse(_jumlahBebanController.text),
+          tanggal_beban: _editingBeban!.tanggal_beban,
+        );
+        bebanProvider.updateBeban(updatedBeban).then((_) {
+          _cancelEditing();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Beban berhasil diperbarui')));
+        });
+      }
     }
   }
 
@@ -71,7 +106,7 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFC4DCD6),
       appBar: AppBar(
-        title: Text('Isi Beban Usaha'),
+        title: Text(_editingBeban == null ? 'Isi Beban Usaha' : 'Edit Beban'),
         backgroundColor: Color(0xFFC4DCD6),
       ),
       body: Padding(
@@ -115,9 +150,22 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
                             value!.isEmpty ? 'Jumlah tidak boleh kosong' : null,
                   ),
                   SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _submitBeban,
-                    child: Text("Simpan Beban"),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _submitForm,
+                        child: Text(
+                          _editingBeban == null ? "Simpan Beban" : "Update",
+                        ),
+                      ),
+                      if (_editingBeban != null) ...[
+                        SizedBox(width: 10),
+                        TextButton(
+                          onPressed: _cancelEditing,
+                          child: Text("Batal"),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -134,7 +182,62 @@ class _BebanFormScreenState extends State<BebanFormScreen> {
                         final beban = provider.bebanList[index];
                         return ListTile(
                           title: Text(beban.nama_beban),
-                          trailing: Text(formatter.format(beban.jumlah_beban)),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(formatter.format(beban.jumlah_beban)),
+                              IconButton(
+                                icon: Icon(Icons.edit, size: 20),
+                                onPressed: () => _startEditing(beban),
+                                tooltip: 'Edit',
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color:
+                                      Colors.red, // <-- TAMBAHKAN WARNA DI SINI
+                                ),
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder:
+                                        (ctx) => AlertDialog(
+                                          title: Text('Konfirmasi'),
+                                          content: Text(
+                                            'Hapus beban "${beban.nama_beban}"?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    ctx,
+                                                  ).pop(false),
+                                              child: Text('Batal'),
+                                            ),
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    ctx,
+                                                  ).pop(true),
+                                              child: Text('Hapus'),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+                                  if (confirmed == true) {
+                                    await provider.deleteBeban(beban.id_beban!);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Beban berhasil dihapus'),
+                                      ),
+                                    );
+                                  }
+                                },
+                                tooltip: 'Hapus',
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),

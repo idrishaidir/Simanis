@@ -10,21 +10,16 @@ class RiwayatProvider with ChangeNotifier {
   List<AktivitasItem> _semuaAktivitas = [];
   List<AktivitasItem> _aktivitasYangTampil = [];
   bool _isLoading = false;
+  double _totalLabaBersih = 0.0; // Variabel baru untuk menyimpan laba bersih
 
   String _queryPencarian = '';
 
   List<AktivitasItem> get aktivitas => _aktivitasYangTampil;
   bool get isLoading => _isLoading;
 
+  // Mengubah getter untuk mengembalikan nilai laba bersih yang sudah dihitung
   double get totalKeuntungan {
-    if (_semuaAktivitas.isEmpty) return 0.0;
-    double pendapatan = _semuaAktivitas
-        .where((item) => item.tipe == 'Uang Masuk')
-        .fold(0.0, (sum, item) => sum + item.jumlah);
-    double pengeluaran = _semuaAktivitas
-        .where((item) => item.tipe == 'Uang Keluar')
-        .fold(0.0, (sum, item) => sum + item.jumlah);
-    return pendapatan - pengeluaran;
+    return _totalLabaBersih;
   }
 
   double get keuntunganHariIni {
@@ -47,14 +42,47 @@ class RiwayatProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     final db = await DatabaseHelper.database;
+
+    // --- AWAL PERHITUNGAN LABA BERSIH KESELURUHAN ---
+
+    // 1. Ambil semua data transaksi & beban
     final List<Map<String, dynamic>> transaksiData = await db.query(
       'transaksi',
       where: 'user_id = ?',
       whereArgs: [userId.toString()],
     );
+    final List<Transaksi> semuaTransaksi =
+        transaksiData.map((item) => Transaksi.fromMap(item)).toList();
+
+    final List<Map<String, dynamic>> bebanData = await db.query(
+      'beban',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    final List<Beban> semuaBeban =
+        bebanData.map((item) => Beban.fromMap(item)).toList();
+
+    // 2. Kalkulasi setiap komponen
+    double totalPendapatan = semuaTransaksi.fold(
+      0.0,
+      (sum, trx) => sum + trx.totalJual,
+    );
+    double totalHpp = semuaTransaksi.fold(
+      0.0,
+      (sum, trx) => sum + trx.totalModal,
+    );
+    double totalBebanOperasional = semuaBeban
+        .where((beban) => !beban.nama_beban.startsWith("Pembelian Stok:"))
+        .fold(0.0, (sum, beban) => sum + beban.jumlah_beban);
+
+    // 3. Hitung laba bersih total dan simpan
+    _totalLabaBersih = totalPendapatan - totalHpp - totalBebanOperasional;
+
+    // --- AKHIR PERHITUNGAN LABA BERSIH ---
+
+    // Kode di bawah ini untuk membangun daftar riwayat aktivitas tetap sama
     final List<AktivitasItem> aktivitasMasuk =
-        transaksiData.map((item) {
-          final trx = Transaksi.fromMap(item);
+        semuaTransaksi.map((trx) {
           return AktivitasItem(
             id: '#TRX${trx.id_trs}',
             tipe: 'Uang Masuk',
@@ -62,14 +90,8 @@ class RiwayatProvider with ChangeNotifier {
             tanggal: trx.tanggal,
           );
         }).toList();
-    final List<Map<String, dynamic>> bebanData = await db.query(
-      'beban',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-    );
     final List<AktivitasItem> aktivitasKeluar =
-        bebanData.map((item) {
-          final beban = Beban.fromMap(item);
+        semuaBeban.map((beban) {
           return AktivitasItem(
             id: '#BBN${beban.id_beban}',
             tipe: 'Uang Keluar',
