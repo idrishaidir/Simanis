@@ -1,3 +1,4 @@
+import 'package:SIMANIS_V1/models/beban_model.dart';
 import 'package:SIMANIS_V1/providers/beban_provider.dart';
 import 'package:SIMANIS_V1/providers/profil_provider.dart';
 import 'package:SIMANIS_V1/providers/transaksi_provider.dart';
@@ -24,63 +25,63 @@ class LaporanDetailScreen extends StatelessWidget {
     );
     final bebanProvider = Provider.of<BebanProvider>(context, listen: false);
 
-    double totalPenjualan = transaksiProvider.transaksiList.fold(
+    // 1. Pendapatan (Total Penjualan)
+    double totalPendapatan = transaksiProvider.transaksiList.fold(
       0,
       (sum, trx) => sum + trx.totalJual,
     );
+
+    // 2. Harga Pokok Penjualan (HPP)
     double hpp = transaksiProvider.transaksiList.fold(
       0,
       (sum, trx) => sum + trx.totalModal,
     );
 
-    double labaKotor = totalPenjualan - hpp;
-
+    // 3. Beban Operasional (semua beban selain HPP dari pembelian stok)
     final bebanOperasionalSaja =
         bebanProvider.bebanList
             .where((beban) => !beban.nama_beban.startsWith("Pembelian Stok:"))
             .toList();
 
-    final Map<String, double> aggregatedBeban = {};
-    for (var beban in bebanOperasionalSaja) {
-      aggregatedBeban.update(
-        beban.nama_beban,
-        (value) => value + beban.jumlah_beban,
-        ifAbsent: () => beban.jumlah_beban,
-      );
-    }
-
+    // 4. Hitung Total Beban (HPP + Beban Operasional)
     double totalBebanOperasional = bebanOperasionalSaja.fold(
       0,
       (sum, beban) => sum + beban.jumlah_beban,
     );
+    double totalBeban = hpp + totalBebanOperasional;
 
-    double labaBersih = labaKotor - totalBebanOperasional;
+    // 5. Hitung Laba Bersih (Pendapatan - Total Beban)
+    double labaBersih = totalPendapatan - totalBeban;
 
-    Widget _buildRow(String label, String value, {bool isBold = false}) {
+    Widget _buildRow(
+      String label,
+      String value, {
+      bool isBold = false,
+      int indent = 0,
+      Color? textColor,
+    }) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+        padding: EdgeInsets.fromLTRB(indent * 16.0, 4.0, 8.0, 4.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              flex: 2,
               child: Text(
                 label,
                 style: TextStyle(
                   fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16,
+                  fontSize: 15,
+                  color: textColor,
                 ),
               ),
             ),
-            Text(": ", style: TextStyle(fontSize: 16)),
-            Expanded(
-              flex: 3,
-              child: Text(
-                value,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16,
-                ),
+            Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                fontSize: 15,
+                color: textColor,
               ),
             ),
           ],
@@ -95,19 +96,34 @@ class LaporanDetailScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Kembali', style: TextStyle(color: Colors.black)),
+        title: Text(
+          'Laporan Laba Rugi',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
       ),
 
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(16.0),
           child: Container(
             padding: EdgeInsets.all(16),
-            color: Color(0xFFD9E4E1),
+            decoration: BoxDecoration(
+              color: Color(0xFFD9E4E1),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   profile?.nama_usaha ?? "Nama Usaha",
@@ -115,60 +131,53 @@ class LaporanDetailScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "Laporan Laba",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18),
-                ),
-
-                Text(
                   "Periode ${DateFormat('MMMM yyyy', 'id_ID').format(date)}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    decoration: TextDecoration.underline,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
                 ),
                 SizedBox(height: 24),
+
                 Text(
-                  "Pendapatan",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  "Pendapatan:",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                _buildRow("Penjualan", formatter.format(totalPenjualan)),
-                Divider(),
+                _buildRow("Total Penjualan", formatter.format(totalPendapatan)),
+
+                SizedBox(height: 20),
+
+                Text(
+                  "Beban-Beban:",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 _buildRow(
-                  "Total Pendapatan",
-                  formatter.format(totalPenjualan),
-                  isBold: true,
+                  "Harga Pokok Penjualan (HPP)",
+                  formatter.format(hpp),
+                  indent: 1,
                 ),
-                SizedBox(height: 16),
-                Text(
-                  "Beban",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                _buildRow("Harga Pokok Penjualan", formatter.format(hpp)),
-
-                ...aggregatedBeban.entries.map((entry) {
-                  return _buildRow(entry.key, formatter.format(entry.value));
+                ...bebanOperasionalSaja.map((beban) {
+                  return _buildRow(
+                    beban.nama_beban,
+                    formatter.format(beban.jumlah_beban),
+                    indent: 1,
+                  );
                 }).toList(),
-
                 Divider(),
                 _buildRow(
                   "Total Beban",
-                  formatter.format(totalBebanOperasional),
+                  formatter.format(totalBeban),
                   isBold: true,
+                  indent: 1,
                 ),
+
                 SizedBox(height: 16),
+                Divider(thickness: 2, color: Colors.black87),
+
                 _buildRow(
-                  "Laba Kotor",
-                  formatter.format(labaKotor),
-                  isBold: true,
-                ),
-                _buildRow(
-                  "Laba Bersih",
+                  "LABA BERSIH",
                   formatter.format(labaBersih),
                   isBold: true,
+                  textColor:
+                      labaBersih >= 0 ? Colors.green[700] : Colors.red[700],
                 ),
               ],
             ),
